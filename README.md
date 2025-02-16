@@ -1,4 +1,4 @@
 # Robotics
 Controlling dynamics
 <br>
-Author- Shubhankar
+Author- Shubhankar Mondal
