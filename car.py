@@ -23,9 +23,6 @@ class GroundRobotController:
         delta = np.arctan((self.L * omega) / (v if abs(v) > 1e-5 else 1e-5))
 
         # Limit inputs
-        v = np.clip(v, -10, 10)
-        delta = np.clip(delta, -np.pi/4, np.pi/4)
-
         return np.clip(v, -10, 10), np.clip(delta, -np.pi/4, np.pi/4)
 
 
@@ -48,7 +45,7 @@ def simulate_robot():
     xr, yr, theta = -1, -2, 0   # Initial state
 
     # Arrays to store trajectories
-    state_log = [[xr, yr, theta]]
+    state_log = []
 
     # Trajectory update in each iteration based on control inputs
     for i in range(1, len(t)):
@@ -58,9 +55,13 @@ def simulate_robot():
         xr += v * np.cos(theta) * dt
         yr += v * np.sin(theta) * dt
         theta += (v / 5) * np.tan(delta) * dt
+        front_x = xr + 2.5 * np.cos(theta)
+        front_y = yr + 2.5 * np.sin(theta)
+        rear_x = xr - 2.5 * np.cos(theta)
+        rear_y = yr - 2.5 * np.sin(theta)
 
         # Append trajectories
-        state_log.append ([xr, yr, theta])
+        state_log.append([front_x, front_y, rear_x, rear_y])
 
     state_log = np.array(state_log)
 
@@ -70,8 +71,11 @@ def simulate_robot():
     def animate(i):
         ax.clear()
         ax.plot(xd, yd, 'r--', label='Desired Path')
-        ax.plot(state_log[:i, 0], state_log[:i, 1], 'b-', label='Robot Path')
-        ax.plot(state_log[i, 0], state_log[i, 1], 'ko')
+        ax.plot(state_log[:i, 2], state_log[:i, 3], 'b-', label='Rear Wheel Path')
+        ax.plot(state_log[:i, 0], state_log[:i, 1], 'g-', label='Front Wheel Path')
+        ax.plot([state_log[i, 2], state_log[i, 0]], [state_log[i, 3], state_log[i, 1]], 'k-', label='Body')
+        ax.plot([state_log[i, 2] - 0.5, state_log[i, 2] + 0.5], [state_log[i, 3], state_log[i, 3]], 'b-', linewidth=3, label='Rear Axle')
+        ax.plot([state_log[i, 0] - 0.5, state_log[i, 0] + 0.5], [state_log[i, 1], state_log[i, 1]], 'g-', linewidth=3, label='Front Axle')
         ax.set_title(f'Time: {i*dt:.2f}s')
         ax.set_xlabel('X Position (m)')
         ax.set_ylabel('Y Position (m)')
